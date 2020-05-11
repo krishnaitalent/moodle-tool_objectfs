@@ -414,7 +414,7 @@ abstract class object_file_system extends \file_system_filedir {
      * @throws \dml_exception
      * @throws \coding_exception
      */
-    public function xsendfile_file(stored_file $file): bool {
+    public function xsendfile_file(stored_file $file) {
         $contenthash = $file->get_contenthash();
         if ($this->presigned_url_configured() &&
                 $this->presigned_url_should_redirect_file($file) &&
