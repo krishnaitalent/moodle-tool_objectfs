@@ -421,6 +421,13 @@ abstract class object_file_system extends \file_system_filedir {
 
             return $this->redirect_to_presigned_url($contenthash, headers_list());
         }
+
+        if ($this->externalclient->support_presigned_urls()) {
+            $ranges = $this->get_valid_http_ranges($file->get_filesize());
+            if ($file->get_filesize() > 2097152 && $ranges) {
+                $this->serve_range_request_via_presigned_url($file->get_contenthash(), $file->get_filesize(), $ranges);
+            }
+        }
         return false;
     }
 
@@ -442,6 +449,14 @@ abstract class object_file_system extends \file_system_filedir {
                 $this->presigned_url_should_redirect($contenthash, $headers)) {
 
             return $this->redirect_to_presigned_url($contenthash, $headers);
+        }
+
+        if ($this->externalclient->support_presigned_urls()) {
+            $filesize = $this->get_filesize_by_contenthash($contenthash);
+            $ranges = $this->get_valid_http_ranges($filesize);
+            if ($filesize > 2097152 && $ranges) {
+                $this->serve_range_request_via_presigned_url($contenthash, $file->get_filesize(), $ranges);
+            }
         }
         return false;
     }
@@ -897,5 +912,69 @@ abstract class object_file_system extends \file_system_filedir {
     public function get_filesize_by_contenthash($contenthash) {
         global $DB;
         return $DB->get_field('files', 'filesize', ['contenthash' => $contenthash], IGNORE_MULTIPLE);
+    }
+
+    /**
+     * Gets valid HTTP ranges for range request.
+     *
+     * @param  int          $filesize Size of the file to be served.
+     * @return object|false           Array of range
+     */
+    public function get_valid_http_ranges($filesize) {
+        $range = manager::get_header($_SERVER, 'HTTP_RANGE');
+        if (!empty($range)) {
+            preg_match('{bytes=(\d+)?-(\d+)?(,)?}i', $range, $matches);
+            if (empty($matches[3])) {
+                $ranges = new \stdClass();
+                $ranges->rangefrom = (isset($matches[1])) ? intval($matches[1]) : 0;
+                $ranges->rangeto = (isset($matches[2])) ? intval($matches[2]) : ($filesize - 1);
+                $ranges->length = $ranges->rangeto - $ranges->rangefrom + 1;
+                if ($ranges->length > 5242880) {
+                    // Stream files in 5MB-chunks.
+                    $ranges->rangeto = $ranges->rangefrom + 5242880 - 1;
+                    $ranges->length = 5242880;
+                }
+                return $ranges;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Serves range request via Pre-Signed URL.
+     *
+     * @param  string $contenthash File content hash.
+     * @param  int    $filesize    File size.
+     * @param  object $ranges      Object with rangefrom, rangeto and length properties.
+     * @return false if couldn't get data.
+     */
+    public function serve_range_request_via_presigned_url($contenthash, $filesize, $ranges) {
+        $url = $this->externalclient->generate_presigned_url($contenthash, headers_list());
+        $headers = array(
+            'HTTP/1.1 206 Partial Content',
+            'Content-Length: '.$ranges->length,
+            'Range: bytes=' . $ranges->rangefrom . '-' . $ranges->rangeto,
+        );
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 15);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 15);
+        $content = curl_exec($curl);
+        curl_close($curl);
+
+        if ($content === false) {
+            return false;
+        } else {
+            header('HTTP/1.1 206 Partial Content');
+            header('Content-Range: bytes ' . $ranges->rangefrom . '-' . $ranges->rangeto . '/' . $filesize);
+            header('Content-Length: ' . $ranges->length);
+            header('Accept-Ranges: bytes');
+            echo $content;
+            die;
+        }
     }
 }
