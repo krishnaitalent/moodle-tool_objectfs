@@ -457,14 +457,6 @@ abstract class object_file_system extends \file_system_filedir {
 
             return $this->redirect_to_presigned_url($contenthash, $headers);
         }
-
-        if ($this->externalclient->support_presigned_urls()) {
-            $filesize = $this->get_filesize_by_contenthash($contenthash);
-            $ranges = $this->get_valid_http_ranges($filesize);
-            if ($filesize > self::MAX_TEMP_LIMIT && $ranges) {
-                $this->serve_range_request($contenthash, $ranges);
-            }
-        }
         return false;
     }
 
