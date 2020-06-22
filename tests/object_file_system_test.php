@@ -789,4 +789,66 @@ class object_file_system_testcase extends tool_objectfs_testcase {
         $actual = $this->filesystem->get_filesize_by_contenthash($fakehash);
         $this->assertFalse($actual);
     }
+
+    /**
+     * Data provider for test_get_valid_http_ranges().
+     *
+     * @return array
+     */
+    public function test_get_valid_http_ranges_provider() {
+        return [
+            ['', 0, false],
+            ['bytes=0-', 100, (object)['rangefrom' => 0, 'rangeto' => 99, 'length' => 100]],
+            ['bytes=0-49/100', 100, (object)['rangefrom' => 0, 'rangeto' => 49, 'length' => 50]],
+            ['bytes=50-', 100, (object)['rangefrom' => 50, 'rangeto' => 99, 'length' => 50]],
+            ['bytes=50-80/100', 100, (object)['rangefrom' => 50, 'rangeto' => 80, 'length' => 31]],
+        ];
+    }
+
+    /**
+     * Test get_valid_http_ranges() returns range object depending on $_SERVER['HTTP_RANGE'] and file size.
+     *
+     * @dataProvider test_get_valid_http_ranges_provider
+     *
+     * @param string $httprangeheader HTTP_RANGE header.
+     * @param int    $filesize        File size.
+     * @param mixed  $expectedresult  Expected result.
+     */
+    public function test_get_valid_http_ranges($httprangeheader, $filesize, $expectedresult) {
+        $_SERVER['HTTP_RANGE'] = $httprangeheader;
+        $actual = $this->filesystem->get_valid_http_ranges($filesize);
+        $this->assertEquals($expectedresult, $actual);
+    }
+
+    /**
+     * Data provider for test_curl_range_request_to_presigned_url().
+     *
+     * @return array
+     */
+    public function test_curl_range_request_to_presigned_url_provider() {
+        return [
+            ['', false, ''],
+            ['15-bytes string', (object)['rangefrom' => 0, 'rangeto' => 14, 'length' => 15], '15-bytes string'],
+            ['15-bytes string', (object)['rangefrom' => 0, 'rangeto' => 9, 'length' => 10], '15-bytes s'],
+            ['15-bytes string', (object)['rangefrom' => 5, 'rangeto' => 14, 'length' => 10], 'tes string'],
+        ];
+    }
+
+    /**
+     * Test curl_range_request_to_presigned_url() returns expected result.
+     *
+     * @dataProvider test_curl_range_request_to_presigned_url_provider
+     *
+     * @param string $content        File content.
+     * @param mixed  $ranges         Request ranges object.
+     * @param string $expectedresult Expected result.
+     */
+    public function test_curl_range_request_to_presigned_url($content, $ranges, $expectedresult) {
+        if (!$this->filesystem->get_external_client()->support_presigned_urls()) {
+            $this->markTestSkipped('Pre-signed URLs not supported for given storage.');
+        }
+        $file = $this->create_remote_file($content);
+        $actual = $this->filesystem->curl_range_request_to_presigned_url($file->get_contenthash(), $ranges, []);
+        $this->assertEquals($expectedresult, $actual['content']);
+    }
 }
