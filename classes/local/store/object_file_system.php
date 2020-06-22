@@ -419,6 +419,7 @@ abstract class object_file_system extends \file_system_filedir {
      * @param stored_file $file The file to send
      * @return bool success
      * @throws \dml_exception
+     * @throws \coding_exception
      */
     public function xsendfile_file(stored_file $file): bool {
         $contenthash = $file->get_contenthash();
@@ -432,7 +433,7 @@ abstract class object_file_system extends \file_system_filedir {
         if ($this->externalclient->support_presigned_urls()) {
             $ranges = $this->get_valid_http_ranges($file->get_filesize());
             if ($file->get_filesize() > self::MAX_TEMP_LIMIT && $ranges) {
-                $this->serve_range_request($file->get_contenthash(), $ranges);
+                $this->serve_range_request($file, $ranges);
             }
         }
         return false;
@@ -942,13 +943,13 @@ abstract class object_file_system extends \file_system_filedir {
     /**
      * Serves range request via Pre-Signed URL.
      *
-     * @param  string $contenthash File content hash.
-     * @param  object $ranges      Object with rangefrom, rangeto and length properties.
+     * @param  stored_file $file    The file to send
+     * @param  object      $ranges  Object with rangefrom, rangeto and length properties.
      * @return false if couldn't get data.
      * @throws \coding_exception
      */
-    public function serve_range_request($contenthash, $ranges) {
-        $response = $this->curl_range_request_to_presigned_url($contenthash, $ranges, headers_list());
+    public function serve_range_request(stored_file $file, $ranges) {
+        $response = $this->curl_range_request_to_presigned_url($file->get_contenthash(), $ranges, headers_list());
         if ($response['content'] == '') {
             return false;
         } else {
@@ -957,10 +958,14 @@ abstract class object_file_system extends \file_system_filedir {
             $contentrange = manager::get_header($response['responseheaders'], 'Content-Range');
             if ($contentrange !== '') {
                 header('Content-Range: ' . $contentrange);
+            } else {
+                header('Content-Range: bytes ' . $ranges->rangefrom . '-' . $ranges->rangeto . '/' . $file->get_filesize());
             }
             $contentlength = manager::get_header($response['responseheaders'], 'Content-Length');
             if ($contentlength !== '') {
                 header('Content-Length: ' . $contentlength);
+            } else {
+                header('Content-Length: ' . $ranges->length);
             }
             echo $response['content'];
             die;
