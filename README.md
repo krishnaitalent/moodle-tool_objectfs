@@ -365,6 +365,8 @@ The patch was created with following commands:
 // Cherry-pick MDL-53240
 git cherry-pick 6c4a5fdf88ac8ad88c4e86cf9b54d2b55bf2fd58
 git cherry-pick e3ad9db6b67aa378b1787497991a4422f57a6a3d
+git cherry-pick 8cf36e9c81a704c8dee90d0fef9402aec0eaf80e
+git cherry-pick 97bb4f755e5f5c8e488ecc7ad7cc932c4e294226
 
 // Cherry-pick MDL-66304
 git cherry-pick 1a159252405e85394d241922a5244309e9ad14f4
