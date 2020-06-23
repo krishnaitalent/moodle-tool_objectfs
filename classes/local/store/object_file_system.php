@@ -950,7 +950,9 @@ abstract class object_file_system extends \file_system_filedir {
      */
     public function serve_range_request(stored_file $file, $ranges) {
         $response = $this->curl_range_request_to_presigned_url($file->get_contenthash(), $ranges, headers_list());
-        if ($response['content'] == '') {
+        $httpcode = manager::get_header($response['responseheaders'], 'HTTP/1.1');
+        if ($response['content'] == '' || $httpcode != '206 Partial Content') {
+            debugging('Range request failed with HTTP code: ' . $httpcode . '. Details: ' . $response['content']);
             return false;
         } else {
             header('HTTP/1.1 206 Partial Content');
