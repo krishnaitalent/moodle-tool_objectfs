@@ -857,4 +857,16 @@ class object_file_system_testcase extends tool_objectfs_testcase {
         $actual = $externalclient->curl_range_request_to_presigned_url($file->get_contenthash() . '_fake', $ranges, []);
         $this->assertEquals('404 Not Found', manager::get_header($actual['responseheaders'], 'HTTP/1.1'));
     }
+
+    /**
+     * Test external client test_range_request() method.
+     */
+    public function test_test_range_request() {
+        $externalclient = $this->filesystem->get_external_client();
+        if ($externalclient->support_presigned_urls()) {
+            $this->assertTrue($externalclient->test_range_request($this->filesystem));
+        } else {
+            $this->assertFalse($externalclient->test_range_request($this->filesystem));
+        }
+    }
 }
