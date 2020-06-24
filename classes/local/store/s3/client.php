@@ -41,7 +41,7 @@ class client extends object_client_base {
     /**
      * @var int A predefined limit of data stored.
      * When hit, php://temp will use a temporary file.
-     * Reference: https://www.php.net/manual/en/wrappers.php.php
+     * Reference: https://github.com/catalyst/moodle-local_aws/blob/master/sdk/Aws/S3/StreamWrapper.php#L19-L25
      */
     const MAX_TEMP_LIMIT = 2097152;
 
@@ -665,17 +665,10 @@ class client extends object_client_base {
         if ($response['content'] != '' && $httpcode == '206 Partial Content') {
             header('HTTP/1.1 206 Partial Content');
             header('Accept-Ranges: bytes');
-            $contentrange = manager::get_header($response['responseheaders'], 'Content-Range');
-            if ($contentrange !== '') {
-                header('Content-Range: ' . $contentrange);
-            } else {
-                header('Content-Range: bytes ' . $ranges->rangefrom . '-' . $ranges->rangeto . '/' . $file->get_filesize());
-            }
+            header('Content-Range: ' . manager::get_header($response['responseheaders'], 'Content-Range'));
             $contentlength = manager::get_header($response['responseheaders'], 'Content-Length');
             if ($contentlength !== '') {
                 header('Content-Length: ' . $contentlength);
-            } else {
-                header('Content-Length: ' . $ranges->length);
             }
             echo $response['content'];
             die;
