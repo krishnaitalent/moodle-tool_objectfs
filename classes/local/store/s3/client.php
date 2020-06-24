@@ -645,16 +645,16 @@ class client extends object_client_base {
     }
 
     /**
-     * Serves range request.
+     * Proxy range request.
      *
      * @param  \stored_file $file    The file to send
      * @param  object       $ranges  Object with rangefrom, rangeto and length properties.
      * @return false If couldn't get data.
      * @throws \coding_exception
      */
-    public function serve_range_request(\stored_file $file, $ranges) {
-        // Do not serve files with size less than 2MB.
-        if ($file->get_filesize() < self::MAX_TEMP_LIMIT) {
+    public function proxy_range_request(\stored_file $file, $ranges) {
+        // Do not serve files with size less than 2MB or if the feature is disabled.
+        if ($file->get_filesize() < self::MAX_TEMP_LIMIT || empty($this->config->proxyrangerequests)) {
             return false;
         }
 

@@ -426,7 +426,7 @@ abstract class object_file_system extends \file_system_filedir {
         if ($this->externalclient->support_presigned_urls() &&
                 $ranges = $this->get_valid_http_ranges($file->get_filesize())) {
 
-            return $this->serve_range_request($file, $ranges);
+            return $this->externalclient->proxy_range_request($file, $ranges);
         }
 
         return false;
@@ -909,6 +909,7 @@ abstract class object_file_system extends \file_system_filedir {
 
     /**
      * Gets valid HTTP ranges for range request.
+     * Throttles request length down to 5MB size if it's greater.
      *
      * @param  int          $filesize Size of the file to be served.
      * @return object|false           Array of range
@@ -931,16 +932,5 @@ abstract class object_file_system extends \file_system_filedir {
             }
         }
         return false;
-    }
-
-    /**
-     * Serves range request.
-     *
-     * @param  stored_file $file    The file to send
-     * @param  object      $ranges  Object with rangefrom, rangeto and length properties.
-     * @return false                If could not get data or file is not big enough.
-     */
-    public function serve_range_request(stored_file $file, $ranges) {
-        return $this->externalclient->serve_range_request($file, $ranges);
     }
 }

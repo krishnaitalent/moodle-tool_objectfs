@@ -41,7 +41,7 @@ interface object_client {
     public function generate_presigned_url($contenthash, $headers = array());
     public function support_presigned_urls();
     public function test_permissions($testdelete);
-    public function serve_range_request(\stored_file $file, $ranges);
+    public function proxy_range_request(\stored_file $file, $ranges);
 }
 
 
