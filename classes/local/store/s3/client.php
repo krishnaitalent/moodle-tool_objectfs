@@ -677,12 +677,11 @@ class client extends object_client_base {
                 header('Content-Length: ' . $ranges->length);
             }
             echo $response['content'];
+            die;
         } else {
-            header('HTTP/1.1 ' . $httpcode);
-            debugging('Range request to URL ' . $response['url'] . ' failed with HTTP code: ' . $httpcode . '. Details: ' . $response['content']);
+            throw new \file_exception('Range request to URL ' . $response['url'] .
+                ' failed with HTTP code: ' . $httpcode . '. Details: ' . $response['content']);
         }
-        // Die in any case was the content served or not.
-        die;
     }
 
     /**
