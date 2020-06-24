@@ -19,6 +19,7 @@ namespace tool_objectfs\tests;
 defined('MOODLE_INTERNAL') || die();
 
 use tool_objectfs\local\store\object_file_system;
+use tool_objectfs\local\manager;
 
 require_once(__DIR__ . '/classes/test_client.php');
 require_once(__DIR__ . '/tool_objectfs_testcase.php');
@@ -827,7 +828,6 @@ class object_file_system_testcase extends tool_objectfs_testcase {
      */
     public function test_curl_range_request_to_presigned_url_provider() {
         return [
-            ['', false, ''],
             ['15-bytes string', (object)['rangefrom' => 0, 'rangeto' => 14, 'length' => 15], '15-bytes string'],
             ['15-bytes string', (object)['rangefrom' => 0, 'rangeto' => 9, 'length' => 10], '15-bytes s'],
             ['15-bytes string', (object)['rangefrom' => 5, 'rangeto' => 14, 'length' => 10], 'tes string'],
@@ -835,7 +835,7 @@ class object_file_system_testcase extends tool_objectfs_testcase {
     }
 
     /**
-     * Test curl_range_request_to_presigned_url() returns expected result.
+     * Test external client curl_range_request_to_presigned_url() returns expected result.
      *
      * @dataProvider test_curl_range_request_to_presigned_url_provider
      *
@@ -848,7 +848,13 @@ class object_file_system_testcase extends tool_objectfs_testcase {
             $this->markTestSkipped('Pre-signed URLs not supported for given storage.');
         }
         $file = $this->create_remote_file($content);
-        $actual = $this->filesystem->curl_range_request_to_presigned_url($file->get_contenthash(), $ranges, []);
+        $externalclient = $this->filesystem->get_external_client();
+        // Test good response.
+        $actual = $externalclient->curl_range_request_to_presigned_url($file->get_contenthash(), $ranges, []);
         $this->assertEquals($expectedresult, $actual['content']);
+        $this->assertEquals('206 Partial Content', manager::get_header($actual['responseheaders'], 'HTTP/1.1'));
+        // Test bad response.
+        $actual = $externalclient->curl_range_request_to_presigned_url($file->get_contenthash() . '_fake', $ranges, []);
+        $this->assertEquals('404 Not Found', manager::get_header($actual['responseheaders'], 'HTTP/1.1'));
     }
 }

@@ -116,4 +116,15 @@ abstract class object_client_base implements object_client {
     public function get_maximum_upload_size() {
         return $this->maxupload;
     }
+
+    /**
+     * Serves range request.
+     *
+     * @param  \stored_file $file    The file to send
+     * @param  object       $ranges  Object with rangefrom, rangeto and length properties.
+     * @return false                 If couldn't get data.
+     */
+    public function serve_range_request(\stored_file $file, $ranges) {
+        return false;
+    }
 }

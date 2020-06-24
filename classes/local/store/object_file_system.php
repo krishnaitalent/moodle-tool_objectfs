@@ -47,13 +47,6 @@ require_once($CFG->libdir . '/filestorage/file_storage.php');
 
 abstract class object_file_system extends \file_system_filedir {
 
-    /**
-     * @var int A predefined limit of data stored.
-     * When hit, php://temp will use a temporary file.
-     * Reference: https://www.php.net/manual/en/wrappers.php.php
-     */
-    const MAX_TEMP_LIMIT = 2097152;
-
     public $externalclient;
     private $preferexternal;
     private $deleteexternally;
@@ -430,12 +423,12 @@ abstract class object_file_system extends \file_system_filedir {
             return $this->redirect_to_presigned_url($contenthash, headers_list());
         }
 
-        if ($this->externalclient->support_presigned_urls()) {
-            $ranges = $this->get_valid_http_ranges($file->get_filesize());
-            if ($file->get_filesize() > self::MAX_TEMP_LIMIT && $ranges) {
-                $this->serve_range_request($file, $ranges);
-            }
+        if ($this->externalclient->support_presigned_urls() &&
+                $ranges = $this->get_valid_http_ranges($file->get_filesize())) {
+
+            return $this->serve_range_request($file, $ranges);
         }
+
         return false;
     }
 
@@ -941,65 +934,13 @@ abstract class object_file_system extends \file_system_filedir {
     }
 
     /**
-     * Serves range request via Pre-Signed URL.
+     * Serves range request.
      *
      * @param  stored_file $file    The file to send
      * @param  object      $ranges  Object with rangefrom, rangeto and length properties.
-     * @return false if couldn't get data.
-     * @throws \coding_exception
+     * @return false                If could not get data or file is not big enough.
      */
     public function serve_range_request(stored_file $file, $ranges) {
-        $response = $this->curl_range_request_to_presigned_url($file->get_contenthash(), $ranges, headers_list());
-        $httpcode = manager::get_header($response['responseheaders'], 'HTTP/1.1');
-        if ($response['content'] == '' || $httpcode != '206 Partial Content') {
-            debugging('Range request failed with HTTP code: ' . $httpcode . '. Details: ' . $response['content']);
-            return false;
-        } else {
-            header('HTTP/1.1 206 Partial Content');
-            header('Accept-Ranges: bytes');
-            $contentrange = manager::get_header($response['responseheaders'], 'Content-Range');
-            if ($contentrange !== '') {
-                header('Content-Range: ' . $contentrange);
-            } else {
-                header('Content-Range: bytes ' . $ranges->rangefrom . '-' . $ranges->rangeto . '/' . $file->get_filesize());
-            }
-            $contentlength = manager::get_header($response['responseheaders'], 'Content-Length');
-            if ($contentlength !== '') {
-                header('Content-Length: ' . $contentlength);
-            } else {
-                header('Content-Length: ' . $ranges->length);
-            }
-            echo $response['content'];
-            die;
-        }
-    }
-
-    /**
-     * Does the range request to Pre-Signed URL via curl.
-     *
-     * @param  string $contenthash File content hash.
-     * @param  object $ranges      Object with rangefrom, rangeto and length properties.
-     * @param  array  $headers     Request headers.
-     * @return array               Requested data.
-     * @throws \coding_exception
-     */
-    public function curl_range_request_to_presigned_url($contenthash, $ranges, $headers) {
-        if (!isset($ranges->rangefrom) || !isset($ranges->rangeto) || !isset($ranges->length)) {
-            return array('header' => '', 'content' => '');
-        }
-        $url = $this->externalclient->generate_presigned_url($contenthash, $headers);
-        $headers = array(
-            'HTTP/1.1 206 Partial Content',
-            'Content-Length: '. $ranges->length,
-            'Range: bytes=' . $ranges->rangefrom . '-' . $ranges->rangeto,
-        );
-        $curl = new \curl();
-        $curl->setopt(array('CURLOPT_RETURNTRANSFER' => true));
-        $curl->setopt(array('CURLOPT_SSL_VERIFYPEER' => false));
-        $curl->setopt(array('CURLOPT_CONNECTTIMEOUT' => 15));
-        $curl->setopt(array('CURLOPT_TIMEOUT' => 15));
-        $curl->setHeader($headers);
-        $content = $curl->get($url);
-        return array('responseheaders' => $curl->getResponse(), 'content' => $content);
+        return $this->externalclient->serve_range_request($file, $ranges);
     }
 }
