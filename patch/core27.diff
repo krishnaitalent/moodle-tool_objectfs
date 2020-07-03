@@ -6112,24 +6112,20 @@ index 91e17cf9aeb..8530ab6b594 100644
 2.17.1
 
 
-From 89723a242e35d7378ddae31d0d1f85c03d6bbcf0 Mon Sep 17 00:00:00 2001
-From: Jonathon Fowler <fowlerj@usq.edu.au>
-Date: Fri, 24 Mar 2017 21:03:04 +0100
+From fbf0111b3e6c60a5bedb2a831cfc03c5967e29ca Mon Sep 17 00:00:00 2001
+From: Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
+Date: Fri, 3 Jul 2020 13:27:37 +1000
 Subject: [PATCH 12/12] MDL-53240 filetypes: Introduce the form element to
  specify plugin types
 
-This is a stripped down version of the original Jonathon's element
-without the actual JS selector. The options "allowall" and "onlytypes"
-are not fully supported right now yet.
+This is a stripped down version of the original Jonathon's element without the actual JS selector. The options allowall and onlytypes are not fully supported right now yet.
 ---
  lib/form/filetypes.php                        | 194 ++++++++++++++++++
  .../templates/filetypes-descriptions.mustache |  60 ++++++
  lib/formslib.php                              |   1 +
- .../core_form/element-filetypes.mustache      |   1 +
- 4 files changed, 256 insertions(+)
+ 3 files changed, 255 insertions(+)
  create mode 100644 lib/form/filetypes.php
  create mode 100644 lib/form/templates/filetypes-descriptions.mustache
- create mode 100644 theme/boost/templates/core_form/element-filetypes.mustache
 
 diff --git a/lib/form/filetypes.php b/lib/form/filetypes.php
 new file mode 100644
@@ -6409,13 +6405,6 @@ index 38c1073e697..079151ba50c 100644
  MoodleQuickForm::registerElementType('grading', "$CFG->libdir/form/grading.php", 'MoodleQuickForm_grading');
  MoodleQuickForm::registerElementType('group', "$CFG->libdir/form/group.php", 'MoodleQuickForm_group');
  MoodleQuickForm::registerElementType('header', "$CFG->libdir/form/header.php", 'MoodleQuickForm_header');
-diff --git a/theme/boost/templates/core_form/element-filetypes.mustache b/theme/boost/templates/core_form/element-filetypes.mustache
-new file mode 100644
-index 00000000000..9a4e5cbe565
---- /dev/null
-+++ b/theme/boost/templates/core_form/element-filetypes.mustache
-@@ -0,0 +1 @@
-+{{> core_form/element-group }}
 -- 
 2.17.1
 
