@@ -7711,14 +7711,13 @@ index 00000000000..51153601f5c
 2.17.1
 
 
-From 8d5be2a5a54ffb7d2e57c5fa3b3aa5950d83c7fe Mon Sep 17 00:00:00 2001
-From: sam marshall <s.marshall@open.ac.uk>
-Date: Thu, 27 Nov 2014 18:33:39 +0000
+From 8dbd82be3052be34facd02931a1e7522c0773425 Mon Sep 17 00:00:00 2001
+From: Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
+Date: Fri, 3 Jul 2020 14:37:55 +1000
 Subject: [PATCH 14/15] MDL-42616 filelib: New user interface to edit and add
  file types (2/2)
 
-New admin tool tool_filetypes which uses the new API to add and
-modify file type definitions.
+New admin tool tool_filetypes which uses the new API to add and modify file type definitions.
 ---
  admin/tool/filetypes/classes/utils.php        | 122 ++++++++++++
  admin/tool/filetypes/delete.php               |  60 ++++++
@@ -8890,7 +8889,7 @@ index 00000000000..6d536835d4e
 +}
 diff --git a/admin/tool/filetypes/version.php b/admin/tool/filetypes/version.php
 new file mode 100644
-index 00000000000..f4cefec69b0
+index 00000000000..c9a67d5d7be
 --- /dev/null
 +++ b/admin/tool/filetypes/version.php
 @@ -0,0 +1,29 @@
@@ -8920,14 +8919,14 @@ index 00000000000..f4cefec69b0
 +
 +defined('MOODLE_INTERNAL') || die();
 +
-+$plugin->version = 2014112700;
-+$plugin->requires = 2014112700;
++$plugin->version = 2014051220;
++$plugin->requires = 2014051220;
 +$plugin->component = 'tool_filetypes';
 -- 
 2.17.1
 
 
-From 4346ea335352d5f8fca9f4c48176021850e023bb Mon Sep 17 00:00:00 2001
+From 1c75e2dd079b2a5007aa11e84197472a842dacc4 Mon Sep 17 00:00:00 2001
 From: Frederic Massart <fred@moodle.com>
 Date: Tue, 23 Dec 2014 12:04:02 +0800
 Subject: [PATCH 15/15] MDL-42616 core: Adding tool_filetypes to the standard
