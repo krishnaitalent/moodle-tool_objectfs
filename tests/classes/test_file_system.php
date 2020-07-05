@@ -42,6 +42,7 @@ class test_file_system extends object_file_system {
 
     protected function initialise_external_client($config) {
         global $CFG;
+        $config->filesystem = '\\tool_objectfs\\tests\\test_file_system';
         if (isset($CFG->phpunit_objectfs_s3_integration_test_credentials)) {
             $credentials = $CFG->phpunit_objectfs_s3_integration_test_credentials;
             $config->s3_key = $credentials['s3_key'];

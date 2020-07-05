@@ -38,6 +38,9 @@ abstract class object_client_base implements object_client {
     /** @var int $maxupload Maximum allowed file size that can be uploaded. */
     protected $maxupload;
 
+    /** @var object $config Client config. */
+    protected $config;
+
     public function __construct($config) {
 
     }
@@ -136,5 +139,81 @@ abstract class object_client_base implements object_client {
      */
     public function test_range_request($filesystem) {
         return false;
+    }
+
+    /**
+     * Tests connection to external storage.
+     * Override this method in client class.
+     *
+     * @return object
+     */
+    public function test_connection() {
+        return (object)['success' => false, 'details' => ''];
+    }
+
+    /**
+     * Tests permissions to external storage.
+     * Override this method in client class.
+     *
+     * @param bool $testdelete Test delete permission and fail the test if could delete object from the storage.
+     * @return object
+     */
+    public function test_permissions($testdelete) {
+        return (object)['success' => false, 'details' => ''];
+    }
+
+    /**
+     * Returns true if the client is fully configured and ready to go.
+     *
+     * @return bool
+     */
+    public function client_is_ready() {
+        global $CFG;
+        $showdebugging = (defined('PHPUNIT_TEST') && PHPUNIT_TEST) ? false : true;
+
+        // Return false if alternative_file_system_class is not set in config.php.
+        if (empty($CFG->alternative_file_system_class)) {
+            if ($showdebugging) {
+                debugging('Objectfs is not ready: alternative_file_system_class is not set in config.php');
+            }
+            return false;
+        }
+
+        // Return false if there is a disparity between filesystem set in config.php and admin settings.
+        if ($CFG->alternative_file_system_class != $this->config->filesystem) {
+            if ($showdebugging) {
+                debugging('Objectfs is not ready: There is a disparity between filesystem set in config.php and admin settings');
+            }
+            return false;
+        }
+
+        // Return false if the client SDK does not exist or has not been loaded.
+        if (!$this->get_availability()) {
+            if ($showdebugging) {
+                debugging('Objectfs is not ready: Client SDK does not exist or has not been loaded');
+            }
+            return false;
+        }
+
+        // Return false if connection test failed.
+        $connection = $this->test_connection();
+        if (!$connection->success) {
+            if ($showdebugging) {
+                debugging('Objectfs is not ready: ' . $connection->details);
+            }
+            return false;
+        }
+
+        // Return false if permission test failed.
+        $permissions = $this->test_permissions(false);
+        if (!$permissions->success) {
+            if ($showdebugging) {
+                debugging('Objectfs is not ready: ' . $permissions->details);
+            }
+            return false;
+        }
+
+        // Looks like all checks have been passed. Objectfs is ready to go.
+        return true;
     }
 }

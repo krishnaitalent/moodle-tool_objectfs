@@ -52,6 +52,11 @@ abstract class object_file_system extends \file_system_filedir {
     private $deleteexternally;
     private $logger;
 
+    /**
+     * @var bool $ready Whether the file system is ready.
+     */
+    private $ready;
+
     public function __construct() {
         global $CFG;
         parent::__construct(); // Setup filedir.
@@ -72,6 +77,8 @@ abstract class object_file_system extends \file_system_filedir {
         } else {
             $this->set_logger(new \tool_objectfs\log\null_logger());
         }
+        // Object file system is ready when the client is ready.
+        $this->ready = $this->externalclient->client_is_ready();
     }
 
     public function set_logger(\tool_objectfs\log\objectfs_logger $logger) {
@@ -94,6 +101,15 @@ abstract class object_file_system extends \file_system_filedir {
      */
     public function get_external_client() {
         return $this->externalclient;
+    }
+
+    /**
+     * Getter for ready property.
+     *
+     * @return bool
+     */
+    public function is_ready() {
+        return $this->ready;
     }
 
     protected abstract function initialise_external_client($config);
