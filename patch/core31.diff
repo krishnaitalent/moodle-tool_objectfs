@@ -1,6 +1,6 @@
-From 995c6129b3f417924a806099262d0798f9692f8f Mon Sep 17 00:00:00 2001
-From: Andrew Nicols <andrew@nicols.co.uk>
-Date: Tue, 5 Jan 2016 18:14:16 +0800
+From 4e366e3bab6d0a236e828b07642971a37eb0cbcd Mon Sep 17 00:00:00 2001
+From: Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
+Date: Tue, 7 Jul 2020 15:28:07 +1000
 Subject: [PATCH 1/7] MDL-46375 core_files: Split parts of file_storage into
  new file system
 
@@ -32,7 +32,7 @@ alternative solution.
  create mode 100644 lib/filestorage/tests/fixtures/test.tgz
 
 diff --git a/composer.json b/composer.json
-index a9dbb44b879..98894459b92 100644
+index a9dbb44b879..a4075450ee8 100644
 --- a/composer.json
 +++ b/composer.json
 @@ -4,6 +4,7 @@
@@ -41,7 +41,7 @@ index a9dbb44b879..98894459b92 100644
          "sebastian/recursion-context": "1.0.2",
 -        "moodlehq/behat-extension": "3.31.7"
 +        "moodlehq/behat-extension": "3.31.7",
-+        "mikey179/vfsStream": "^1.6"
++        "mikey179/vfsstream": "^1.6"
      }
  }
 diff --git a/composer.lock b/composer.lock
@@ -6299,7 +6299,7 @@ index 188193dcf46..723bd027c82 100644
 2.17.1
 
 
-From cc98e7932eb9b05e13a5214af0754c9f8c1e101a Mon Sep 17 00:00:00 2001
+From a9df728542e9c7dab8e0f7cf7d153d926e4f0dea Mon Sep 17 00:00:00 2001
 From: Andrew Nicols <andrew@nicols.co.uk>
 Date: Wed, 8 Feb 2017 13:14:51 +0800
 Subject: [PATCH 2/7] MDL-46375 core_files: Correct filename in mbz test
@@ -6341,7 +6341,7 @@ index 5882218379a..34d85d5c27d 100644
 2.17.1
 
 
-From 573f2087be6b514382e27213b4cf170c2966ab4e Mon Sep 17 00:00:00 2001
+From 9f93ff48ad8c1f9202b298b4b01c0bfdb8c34579 Mon Sep 17 00:00:00 2001
 From: Rajesh Taneja <rajesh@moodle.com>
 Date: Tue, 28 Feb 2017 14:58:49 +0800
 Subject: [PATCH 3/7] MDL-58068 testing: Whitelist
@@ -6384,7 +6384,7 @@ index aff8506868e..9663b59f1ad 100644
 2.17.1
 
 
-From a2fcaa2e8142a6a554a65e5d48755672d6d1353f Mon Sep 17 00:00:00 2001
+From 101e5c408db45f0647e0820dc71729bdd03c20b4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?David=20Mudr=C3=A1k?= <david@moodle.com>
 Date: Fri, 24 Mar 2017 22:16:33 +0100
 Subject: [PATCH 4/7] MDL-53240 filetypes: Introduce the filetypes_util helper
@@ -6846,7 +6846,7 @@ index 00000000000..323e8381a93
 2.17.1
 
 
-From 5634051e9ef44ed25acb8256be9e5d716fe42655 Mon Sep 17 00:00:00 2001
+From 3592c8a77d02b9aee9276a50f406c27156e291f5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?David=20Mudr=C3=A1k?= <david@moodle.com>
 Date: Wed, 29 Mar 2017 18:45:53 +0200
 Subject: [PATCH 5/7] MDL-53240 filetypes: Add methods for generating the
@@ -7243,7 +7243,7 @@ index 323e8381a93..91e17cf9aeb 100644
 2.17.1
 
 
-From ebb6d6b13b18d6da564b615268350ff79056ba09 Mon Sep 17 00:00:00 2001
+From d3236143f026d2ed1d9628902e65bd11167da281 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?David=20Mudr=C3=A1k?= <david@moodle.com>
 Date: Wed, 5 Apr 2017 01:21:48 +0200
 Subject: [PATCH 6/7] MDL-53240 filetypes: Introduce admin_setting_filetypes
@@ -7568,7 +7568,7 @@ index 91e17cf9aeb..8530ab6b594 100644
 2.17.1
 
 
-From 83ac21ad7b3651b4110672aed51b8a1b978dec53 Mon Sep 17 00:00:00 2001
+From 590eac8f1f0eff04e1d8bc969ccd69f3279ccdba Mon Sep 17 00:00:00 2001
 From: Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
 Date: Fri, 3 Jul 2020 13:20:38 +1000
 Subject: [PATCH 7/7] MDL-53240 filetypes: Introduce the form element to
